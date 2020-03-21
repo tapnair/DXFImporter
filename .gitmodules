@@ -1,0 +1,6 @@
+[submodule "apper"]
+	path = DXFImporter/apper
+	url = https://github.com/tapnair/apper
+[submodule "DXFImporter/apper"]
+	path = DXFImporter/apper
+	url = https://github.com/tapnair/apper
