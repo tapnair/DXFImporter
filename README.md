@@ -8,12 +8,17 @@ A utility for Fusion 360 to import multiple DXF files.
 ----
 
 ## How to install<a name="How-to-install"></a>
-1. [Download the latest distribution](https://github.com/tapnair/DXFImporter/tree/master/dist/DXFImporter-1.0.0.zip)
+1. [Find the latest distribution](https://github.com/tapnair/DXFImporter/tree/master/dist/)
 
+![](/resources/dist.png)
+
+2. Navigate to the file in github and select download. _(Note right-click "save target as" / "save link as" won't work)
 
 ![](/resources/download.png)
 
-2. Unzip the archive to a permanent location on your computer
+3. Unzip the archive to a permanent location on your computer
+
+![](/resources/unzipped.png)
 
 ### Inside Fusion 360  
 
