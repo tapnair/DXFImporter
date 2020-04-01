@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='DXFImporter',
-    version='1.0.0',
+    version='1.0.1',
     description='A utility for Fusion 360 to import multiple DXF files.',
     long_description=long_description,
     packages=['DXFImporter', 'DXFImporter.apper.apper', 'DXFImporter.commands'],
