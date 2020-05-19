@@ -1,0 +1,472 @@
+Metadata-Version: 2.1
+Name: ezdxf
+Version: 0.12.3
+Summary: A Python package to create/manipulate DXF drawings.
+Home-page: https://ezdxf.mozman.at
+Author: Manfred Moitzi
+Author-email: me@mozman.at
+License: MIT License
+Download-URL: https://pypi.org/project/ezdxf/
+Keywords: DXF,CAD
+Platform: OS Independent
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Provides: ezdxf
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+Requires-Dist: pyparsing (>=2.0.1)
+
+
+ezdxf
+=====
+
+Abstract
+--------
+
+A Python package to create and modify DXF drawings, independent from the DXF
+version. You can open/save every DXF file without losing any content (except comments),
+Unknown tags in the DXF file will be ignored but preserved for saving. With this behavior
+it is possible to open also DXF drawings that contains data from 3rd party applications.
+
+Quick-Info
+----------
+
+- ezdxf is a Python package to create new DXF files and read/modify/write existing DXF files
+- the intended audience are developers
+- requires at least Python 3.6
+- OS independent
+- tested with CPython & pypy3 on Windows 10 & ubuntu-latest by GitHub Actions
+- additional required packages: [pyparsing](https://pypi.org/project/pyparsing/)
+- MIT-License
+- read/write/new support for DXF versions: R12, R2000, R2004, R2007, R2010, R2013 and R2018
+- additional read support for DXF versions R13/R14 (upgraded to R2000)
+- additional read support for older DXF versions than R12 (upgraded to R12)
+- read/write support for ASCII DXF and Binary DXF
+- preserves third-party DXF content
+
+Included extensions:
+
+- `r12writer` add-on to write basic DXF entities direct and fast into a DXF R12 file or stream
+- `iterdxf` add-on to iterate over DXF entities of the modelspace of really big (> 5GB) DXF files which
+ do not fit into memory
+- `Importer` add-on to import entities, blocks and table entries from another DXF document
+- `dxf2code` add-on to generate Python code for DXF structures loaded from DXF 
+ documents as starting point for parametric DXF entity creation
+- Plot Style Files (CTB/STB) read/write add-on
+
+A simple example:
+
+```python
+import ezdxf
+
+# Create a new DXF document.
+doc = ezdxf.new(dxfversion='R2010')
+
+# Create new table entries (layers, linetypes, text styles, ...).
+doc.layers.new('TEXTLAYER', dxfattribs={'color': 2})
+
+# DXF entities (LINE, TEXT, ...) reside in a layout (modelspace, 
+# paperspace layout or block definition).  
+msp = doc.modelspace()
+
+# Add entities to a layout by factory methods: layout.add_...() 
+msp.add_line((0, 0), (10, 0), dxfattribs={'color': 7})
+msp.add_text(
+    'Test', 
+    dxfattribs={
+        'layer': 'TEXTLAYER'
+    }).set_pos((0, 0.2), align='CENTER')
+
+# Save DXF document.
+doc.saveas('test.dxf')
+```
+
+Example for the *r12writer*, which writes a simple DXF R12 file without in-memory structures:
+
+```python
+from random import random
+from ezdxf.addons import r12writer
+
+MAX_X_COORD = 1000
+MAX_Y_COORD = 1000
+
+with r12writer("many_circles.dxf") as doc:
+    for _ in range(100000):
+        doc.add_circle((MAX_X_COORD*random(), MAX_Y_COORD*random()), radius=2)
+```
+
+The r12writer supports only the ENTITIES section of a DXF R12 drawing, no HEADER, TABLES or BLOCKS section is
+present, except FIXED-TABLES are written, than some additional predefined text styles and line types are available.
+
+Installation
+------------
+
+Install with pip for Python 3.6 and later:
+
+    pip install ezdxf
+
+Install latest development version with pip from GitHub:
+
+    pip install git+https://github.com/mozman/ezdxf.git@master
+
+or from source:
+
+    python setup.py install
+
+Website
+-------
+
+https://ezdxf.mozman.at/
+
+Documentation
+-------------
+
+Documentation of development version at https://ezdxf.mozman.at/docs
+
+Documentation of latest release at http://ezdxf.readthedocs.io/
+
+Contribution
+------------
+
+The source code of *ezdxf* can be found at __GitHub__, target your pull requests to the `master` branch:
+
+http://github.com/mozman/ezdxf.git
+
+
+Feedback
+--------
+
+Questions and feedback at __Google Groups__:
+
+https://groups.google.com/d/forum/python-ezdxf
+
+python-ezdxf@googlegroups.com
+
+Questions at __Stack Overflow__:
+
+Post questions at [stack overflow](https://stackoverflow.com/) and use the tag `dxf` or `ezdxf`.
+
+Issue tracker at __GitHub__:
+
+http://github.com/mozman/ezdxf/issues
+
+Contact
+-------
+
+Please post questions at the [forum](https://groups.google.com/d/forum/python-ezdxf) or 
+[stack overflow](https://stackoverflow.com/) to make answers available to other users as well.
+
+ezdxf@mozman.at
+
+Feedback is greatly appreciated.
+
+Manfred
+
+News
+====
+
+Version 0.12.3 - 2020-05-16
+---------------------------
+
+- BUGFIX: DXF R2010+ requires zero length tag 97 for HATCH/SplineEdge if no fit points exist (vshu3000)
+- BUGFIX: Export order of XDATA and embedded objects (vshu3000)
+- BUGFIX: ATTRIB and ATTDEF did not load basic DXF attributes
+- NEW: `BlockLayout()` properties `can_explode` and `scale_uniformly`
+- NEW: `Hatch.remove_association()`
+
+Version 0.12.2 - 2020-05-03
+---------------------------
+
+- BUGFIX: `XData.get()` now raises `DXFValueError` for not existing appids, like all other methods of the `XData()` class
+- BUGFIX: `Layer.description` returns an empty string for unknown XDATA structure in `AcAecLayerStandard`
+- BUGFIX: Initialize/Load `Hatch` edge coordinates as `Vec2()` objects
+- BUGFIX: typo in 3 point angular dimension subclass marker (vshu3000)
+- BUGFIX: HATCH/SplineEdge did export length tag 97 if no fit points exist, creates invalid DXF for AutoCAD/BricsCAD (vshu3000)  
+- BUGFIX: Ellipse handling in `virtual_block_reference_entities()` (Matt Broadway)  
+
+Version 0.12.1 - 2020-04-25
+---------------------------
+
+- BUGFIX: fixed uniform scaled ellipse handling in `explode.virtual_block_reference_entities()`
+- BUGFIX: fixed crash caused by floating point inaccuracy in `Vector.angle_between()` (Matt Broadway)
+- BUGFIX: fixed crash for axis transformation of nearly perpendicular ellipse axis
+- BUGFIX: fixed `Hatch.has_critical_elements()`
+
+
+Version 0.12 - 2020-04-12
+-------------------------
+
+- Release notes: https://ezdxf.mozman.at/release-v0-12.html
+- NEW: `Insert.block()` returns associated `BlockLayout()` or `None` if block not exist or is an XREF
+- NEW: `Insert.has_scaling` returns `True` if any axis scaling is applied
+- NEW: `Insert.has_uniform_scaling` returns `True` if scaling is uniform in x-, y- and z-axis.
+- NEW: `Insert.scale(factor)` set uniform scaling.
+- NEW: `Insert.virtual_entities()` yields 'virtual' entities of a block reference (experimental)
+- NEW: `Insert.explode()` explode block reference entities into target layout (experimental)
+- NEW: `Insert.add_auto_attribs()` add ATTRIB entities defined as ATTDEF in the block layout and fill tags 
+        with values defined by a `dict` (experimental)
+- NEW: `LWPolyline.virtual_entities()` yields 'virtual' LINE and ARC entities
+- NEW: `LWPolyline.explode()` explode LWPOLYLINE as LINE and ARC entities into target layout
+- NEW: `Polyline.virtual_entities()` yields 'virtual' LINE, ARC or 3DFACE entities
+- NEW: `Polyline.explode()` explode POLYLINE as LINE, ARC or 3DFACE entities into target layout
+- NEW: `Dimension.virtual_entities()` yields 'virtual' DXF entities
+- NEW: `Dimension.explode()` explode DIMENSION as basic DXF entities into target layout
+- NEW: `Dimension.transform_to_wcs()` support for UCS based entity transformation
+- NEW: `Dimension.override()` returns `DimStyleOverride()` object
+- NEW: `Dimension.render()` render graphical representation as anonymous block
+- NEW: `Block()` properties `is_anonymous`, `is_xref` and `is_xref_overlay`
+- NEW: `R12FastStreamWriter.add_polyline_2d()`, add 2D POLYLINE with start width, end width and bulge value support
+- NEW: `Ellipse.minor_axis` property returns minor axis as `Vector`
+- NEW: Option `ezdxf.options.write_fixed_meta_data_for_testing`, writes always same timestamps and GUID
+- NEW: Support for loading and exporting proxy graphic encoded as binary data, by default disabled
+- NEW: `ezdxf.proxygraphic.ProxyGraphic()` class to examine binary encoded proxy graphic (Need more example data 
+        for testing!)
+- NEW: Get/set hyperlink for graphic entities
+- NEW: `odafc` add-on to use an installed ODA File Converter for reading and writing DWG files
+- NEW: Support for reading and writing Binary DXF files
+- NEW: Binary DXF support for `r12writer` add-on
+- CHANGE: `R12FastStreamWriter.add_polyline()`, add 3D POLYLINE only, closed flag support
+- CHANGE: renamed `Insert.ucs()` to `Insert.brcs()` which now returns a `BRCS()` object
+- CHANGE: `Polyline.close()`, `Polyline.m_close()` and `Polyline.n_close()` can set and **clear** closed state.
+- BUGFIX: `Dimension.destroy()` should not not destroy associated anonymous block, because if DIMENSION is used in a 
+          block, the anonymous block may be used by several block references
+- BUGFIX: floating point precision error in `intersection_line_line_2d()`
+- BUGFIX: attribute error in `Polyline.transform_to_wcs()` for 2d polylines
+- BUGFIX: LWPOLYLINE was always exported with `const_width=0`
+- BUGFIX: `Face3d.set_edge_visibility()` set inverted state (visible <-> invisible)
+- BUGFIX: Load `AcDbEntity` group codes from base class
+
+Version 0.11.2 - 2020-04-03
+---------------------------
+
+- BUGFIX: upgrade error from DXF R13/14 to R2000 
+
+Version 0.11.1 - 2020-02-29
+---------------------------
+
+- NEW: `Meshbuilder.from_polyface()` to interface to `POLYFACE` and `POLYMESH` 
+- NEW: `Meshbuilder.render_polyface()` create `POLYFACE` objects
+- NEW: `MeshAverageVertexMerger()` an extended version of `MeshVertexMerger()`, location of merged vertices 
+  is the average location of all vertices with the same key
+- NEW: `ezdxf.addons.iterdxf` iterate over modelspace entities of really big DXF files (>1 GB) without loading 
+  them into memory
+- NEW: `ezdxf.addons.r12writer` supports `POLYFACE` and `POLYMESH` entities
+- NEW: `Layout.add_foreign_entity()` copy/move **simple** entities from another DXF document or add unassigned
+  DXF entities to a layout
+- NEW: `MText.plain_text()` returns text content without formatting codes
+- CHANGE: refactor Auditor() into a DXF document fixer, fixes will be applied automatically (work in progress)
+- CHANGE: moved `r12writer` into `addons` subpackage
+- CHANGE: moved `acadctb` into `addons` subpackage
+
+Version 0.11 - 2020-02-15
+-------------------------
+
+- Release notes: https://ezdxf.mozman.at/release-v0-11.html
+- Using standard git branches: 
+  - `master`: development state
+  - `stable`: latest stable release
+- Requires Python 3.6
+- NEW: `Dimension.get_measurement()` supports angular, angular3p and ordinate dimensions
+- NEW: `Layout.add_radius_dim()` implemented
+- NEW: shortcut calls `Layout.add_radius_dim_2p()` and `Layout.add_radius_dim_cra()`
+- NEW: `Layout.add_diameter_dim()` implemented
+- NEW: shortcut `Layout.add_diameter_dim_2p()`
+- NEW: `Circle.vertices(angles)` yields vertices for iterable angles in WCS
+- NEW: `Ellipse.vertices(params)` yields vertices for iterable params in WCS
+- NEW: Arc properties `start_point` and `end_point` returns start- and end point of arc in WCS
+- NEW: Ellipse properties `start_point` and `end_point` returns start- and end point of ellipse in WCS
+- NEW: user defined point format support for 2d POLYLINE entities: 
+  `add_polyline2d([(1, 2, 0.5), (3, 4, 0)], format='xyb')` 
+- NEW: `Polyline.append_formatted_points()` with user defined point format support
+- NEW: `Drawing.set_modelspace_vport(height, center)` set initial view/zoom location for the modelspace
+- NEW: support for associating HATCH boundary paths to geometry entities
+- NEW: `Drawing.output_encoding` returns required output encoding
+- NEW: User Coordinate System (UCS) based entity transformation, allows to work with UCS coordinates, which are 
+  simpler if the UCS is chosen wisely, and transform them later into WCS coordinates. Entities which have a 
+  `transform_to_wcs(ucs)` method, automatically take advantage of the new UCS transformation methods, but not all entity 
+  types are supported, embedded ACIS entities like 3DSOLID, REGION, SURFACE and so on, do not expose their geometry.
+- NEW: `transform_to_wcs(ucs)` implemented for: 3DFACE, ARC, ATTDEF, ATTRIB, CIRCLE, ELLIPSE, HATCH, IMAGE, INSERT, 
+  LEADER, LINE, LWPOLYLINE, MESH, MTEXT, POINT, POLYLINE, RAY, SHAPE, SOLID, SPLINE, TEXT, TRACE, XLINE
+- NEW: `UCS.rotate(axis, angle)` returns a new UCS rotated around WCS vector `axis`
+- NEW: `UCS.rotate_local_x(angle)` returns a new UCS rotated around local x-axis
+- NEW: `UCS.rotate_local_y(angle)` returns a new UCS rotated around local y-axis
+- NEW: `UCS.rotate_local_z(angle)` returns a new UCS rotated around local z-axis
+- NEW: `UCS.copy()` returns a new copy of UCS
+- NEW: `UCS.shift(delta)` shifts UCS inplace by vector `delta`
+- NEW: `UCS.moveto(location)` set new UCS origin to `location` inplace
+- NEW: `size` and `center` properties for bounding box classes
+- NEW: `Insert.ucs()` returns an UCS placed in block reference `insert` location, UCS axis aligned to the block axis.
+- NEW: `Insert.reset_transformation()` reset block reference location, rotation and extrusion vector.
+- CHANGE: renamed `ezdxf.math.left_of_line` to `ezdxf.math.is_point_left_of_line` 
+- NEW: `ezdxf.math.point_to_line_relation()` 2D function returns `-1` for left oft line, `+1` for right oif line , `0` on the line
+- NEW: `ezdxf.math.is_point_on_line_2d()` test if 2D point is on 2D line 
+- NEW: `ezdxf.math.distance_point_line_2d()` distance of 2D point from 2D line
+- NEW: `ezdxf.math.is_point_in_polygon_2d()` test if 2D point is inside of a 2D polygon 
+- NEW: `ezdxf.math.intersection_line_line_2d()` calculate intersection for 2D lines 
+- NEW: `ezdxf.math.offset_vertices_2d()` calculate 2D offset vertices for a 2D polygon 
+- NEW: `ezdxf.math.normal_vector_3p()` returns normal vector for 3 points
+- NEW: `ezdxf.math.is_planar_face()` test if 3D face is planar
+- NEW: `ezdxf.math.subdivide_face()` linear subdivision for 2D/3D faces/polygons 
+- NEW: `ezdxf.math.intersection_ray_ray_3d()` calculate intersection for 3D rays 
+- NEW: `ezdxf.math.Plane()` 3D plane construction tool 
+- NEW: `ezdxf.render.MeshTransformer()` inplace mesh transformation class, subclass of `MeshBuilder()`
+- NEW: `MeshBuilder.render()` added UCS support
+- NEW: `MeshBuilder.render_normals()` render face normals as LINE entities, useful to check face orientation
+- NEW: `ezdxf.render.forms.cone_2p()` create 3D cone mesh from two points
+- NEW: `ezdxf.render.forms.cylinder_2p()` create 3D cylinder mesh from two points
+- NEW: `ezdxf.render.forms.sphere()` create 3D sphere mesh
+- NEW: `pycsg` add-on, a simple Constructive Solid Geometry (CSG) kernel created by Evan Wallace (Javascript) and 
+  Tim Knip (Python)
+- CHANGE: Changed predefined pattern scaling to BricsCAD and AutoCAD standard, set global option 
+  `ezdxf.options.use_old_predefined_pattern_scaling` to True, to use the old pattern scaling before v0.11 
+- CHANGE: removed `ezdxf.PATTERN` constant, use `PATTERN = ezdxf.pattern.load()` instead, set argument 
+  `old_pattern=True` to use the old pattern scaling before v0.11
+- CHANGE: `Table.key()` accepts only strings, therefore tables check `in` accepts also only strings 
+  like `entity.dxf.name`
+- NEW: load DXF comments from file (`ezdxf.comments.from_file`) or stream (`ezdxf.comments.from_stream`)
+- BUGFIX: fixed incorrect HATCH pattern scaling
+- BUGFIX: fixed base point calculation of aligned dimensions
+- BUGFIX: fixed length extension line support for linear dimensions
+- BUGFIX: `UCS.to_ocs_angle_deg()` and `UCS.to_ocs_angle_rad()`
+- BUGFIX: check for unsupported DXF versions at `new()`
+- BUGFIX: fixed dxf2src error for the HATCH entity
+- BUGFIX: `is_point_left_of_line()` algorithm was incorrect
+- BUGFIX: default `dimtxsty` is `Standard` if `options.default_dimension_text_style` is not defined
+- BUGFIX: default arrows for minimal defined dimstyles are closed filled arrows  
+- BUGFIX: use `Standard` as default for undefined dimension styles, e.g. `EZDXF` without setup  
+
+Version 0.10.4 - 2020-01-31
+---------------------------
+
+- BUGFIX: height group code (40) for TEXT, ATTRIB and ATTDEF is mandatory
+
+Version 0.10.3 - 2020-01-29
+---------------------------
+
+- BUGFIX: min DXF version for VISUALSTYLE object is R2000
+
+Version 0.10.2 - 2019-10-05
+---------------------------
+
+- NEW: `Dimension.get_measurement()` returns the actual dimension measurement in WCS units, no scaling applied; angular 
+  and ordinate dimension are not supported yet. 
+- BUGFIX: ordinate dimension exports wrong feature location
+- BUGFIX: `Hatch.set_pattern_fill()` did not set pattern scale, angle and double values
+
+Version 0.10.1 - 2019-09-07
+---------------------------
+
+- BUGFIX: group code for header var $ACADMAINTVER is 90 for DXF R2018+ and 70 for previous DXF versions. This is a 
+  critical bug because AutoCAD 2012/2013 (and possibly earlier versions) will not open DXF files with the new group 
+  code 90 for header variable $ACADMAINTVER.
+
+Version 0.10 - 2019-09-01
+-------------------------
+
+- Release notes: https://ezdxf.mozman.at/release-v0-10.html
+- unified entity system for all DXF versions
+- saving as later DXF version than the source DXF version is possible, but maybe data loss if saving as an older DXF 
+  version than source DXF version (_ezdxf_ is not a DXF converter)
+- templates no more needed and removed from package
+- CHANGE: `DXFEntity`
+    - renamed `DXFEntity.drawing` to `DXFEntity.doc`
+    - `DXFEntity.get_xdata()` keyword `xdata_tag` renamed to `tags`
+    - `DXFEntity.set_xdata()` keyword `xdata_tag` renamed to `tags`
+    - renamed `DXFEntity.remove_reactor_handle()` renamed to `DXFEntity.discard_reactor_handle()`
+    - `DXFEntity.get_extension_dict()` returns `ExtensionDict` object instead of the raw DICTIONARY object
+    - renamed `DXFEntity.supports_dxf_attrib()` to `DXFEntity.is_supported_dxf_attrib()`
+    - renamed `DXFEntity.dxf_attrib_exists()` to `DXFEntity.has_dxf_attrib()`
+- CHANGE: `Layer` entity
+    - removed `Layer.dxf.line_weight` as synonym for `Layer.dxf.lineweight`
+    - renamed `Layer.dxf.plot_style_name` to `Layer.dxf.plotstyle_handle` 
+    - renamed `Layer.dxf.material` to `Layer.dxf.material_handle` 
+- CHANGE: same treatment of `Viewport` entity for all DXF versions
+- CHANGE: `Polyline.vertices()` is now an attribute `Polyline.vertices`, implemented as regular Python list.
+- CHANGE: `Insert.attribs()` is now an attribute `Insert.attribs`, implemented as regular Python list.
+- CHANGE: renamed `Viewport.dxf.center_point` to `Viewport.dxf.center` 
+- CHANGE: renamed `Viewport.dxf.target_point` to `Viewport.dxf.target`
+- CHANGE: direct access to hatch paths (`Hatch.paths`), pattern (`Hatch.pattern`) and gradient (`Hatch.gradient`), 
+          context manager to edit this data is not needed anymore, but still available for backward compatibility  
+- CHANGE: Options
+    - removed `template_dir`, no more needed
+    - new `log_unprocessed_tags` to log unprocessed (unknown) DXF tags 
+- CHANGE: `Dimension()` removes associated anonymous dimension block at deletion
+- CHANGE: safe block deletion protects not explicit referenced blocks like anonymous dimension blocks and arrow blocks
+- CHANGE: `Importer` add-on rewritten, API incompatible to previous ezdxf versions, but previous implementation was 
+          already broken 
+- CHANGE: moved `add_attdef()` to generic layout interface, adding ATTDEF to model- and paperspace is possible
+- CHANGE: entity query - exclude DXF types from `'*'` search, by appending type name with a preceding '!' e.g. query for 
+  all entities except LINE = `"* !LINE"`
+- CHANGE: entity query - removed regular expression support for type name match
+- CHANGE: integration of `MTextData` methods into `MText`
+- CHANGE: removed  `edit_data`, `get_text`, `set_text` methods from `MText`
+- restructured package, module and test file organization
+- NEW: support for `Layer.dxf.true_color` and `Layer.dxf.transparency` attributes (DXF R2004+, undocumented)
+- NEW: `Layer.rgb`, `Layer.color`, `Layer.description` and `Layer.transparency` properties
+- NEW: renaming a `Layer` also renames references to this layer, but use with care
+- NEW: support for adding LEADER entities
+- NEW: `Dimension.get_geometry_block()`, returns the associated anonymous dimension block or `None`
+- NEW: `EntityQuery()` got `first` and `last` properties, to get first or last entity or `None` if query result is empty
+- NEW: added `ngon()`, `star()` and `gear()` to `ezdxf.render.forms`
+- NEW: Source code generator to create Python source code from DXF entities, to recreate this entities by _ezdxf_. 
+  This tool creates only simple structures as a useful starting point for parametric DXF entity creation from existing 
+  DXF files. Not all DXF entities are supported!
+- NEW: support for named plot style files (STB)
+- NEW: can open converted Gerber DXF files tagged as "Version 1.0, Gerber Technology."
+- BUGFIX: fixed MTEXT and GEODATA text splitting errors (do not split at '^')
+- BUGFIX: fixed some subclass errors, mostly DXF reference errors
+- BUGFIX: VERTEX entity inherit `owner` and `linetype` attribute from POLYLINE entity
+- BUGFIX: MTEXT - replacement of `\n` by `\P` at DXF export to avoid invalid DXF files.
+- tested with CPython 3.8
+- removed batch files (.bat) for testing, use `tox` command instead
+
+Version 0.9 - 2019-02-24
+------------------------
+
+- Release notes: https://ezdxf.mozman.at/release-v0-9.html
+- IMPORTANT: Python 2 support REMOVED, if Python 2 support needed: add `ezdxf<0.9` to your `requirements.txt` 
+- NEW: testing on Manjaro Linux in a VM by tox
+- CHANGE: converted NEWS.rst to NEWS.md and README.rst to README.md  
+- CHANGE: moved `Importer()` from `ezdxf.tools` to `ezdxf.addons` - internal structures of modern DXF files are too complex
+  and too undocumented to support importing data in a reliable way - using `Importer()` may corrupt your DXF files or just 
+  don't work!
+- NEW: type annotations to core package and add-ons.
+- NEW: argument `setup` in `ezdxf.new('R12', setup=True)` to setup default line types, text styles and dimension styles, 
+  this feature is disabled by default.
+- NEW: Duplicate table entries: `dwg.styles.duplicate_entry('OpenSans', new_name='OpenSansNew')`, this works for 
+  all tables, but is intended to duplicate STYLES and DIMSTYLES.
+- CHANGED: replaced proprietary fonts in style declarations by open source fonts
+- NEW: open source fonts to download https://github.com/mozman/ezdxf/tree/master/fonts
+- __OpenSansCondensed-Light__ font used for default dimension styles
+- NEW: subpackage `ezdxf.render`, because of DIMENSION rendering
+- NEW: support for AutoCAD standard arrows
+- NEW: support for creating linear DIMENSION entities
+- NEW: background color support for MTEXT
+- CHANGE: DXF template cleanup, removed non standard text styles, dimension styles, layers and blocks
+- CHANGE: text style STANDARD uses `txt` font 
+- CHANGE: renamed subpackage `ezdxf.algebra` to `ezdxf.math`
+- CHANGE: moved `addons.curves` to `render.curves`
+- CHANGE: moved `addons.mesh` to `render.mesh`
+- CHANGE: moved `addons.r12spline` to `render.r12spline`
+- CHANGE: moved `addons.forms` to `render.forms`
+- CHANGE: renamed construction helper classes into Construction...()
+  - `Ray2D()` renamed to `ConstructionRay()`
+  - `Circle()` renamed to `ConstructionCircle()`
+  - `Arc()` renamed to `ConstructionArc()`
+- NEW: construction tools `ConstructionLine()` and `ConstructionBox()`
+- REMOVED: `almost_equal` use `math.isclose`
+- REMOVED: `almost_equal_points` use `ezdxf.math.is_close_points`
+- BUGFIX: closed LWPOLYLINE did not work in AutoCAD (tag order matters), introduced with v0.8.9 packed data structure
+- BUGFIX: `UCS.to_ocs_angle_deg()` corrected
+
+
+
