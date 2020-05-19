@@ -1,3 +1,19 @@
+#  """
+#  :copyright: (c) 2020 by Patrick Rainsberry
+#  DXFImportCommand.py
+#  =========================================================
+#  A Component of DXFImporter, a Fusion 360 add-in
+#
+#  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#
+#  """
+
 import os
 
 import adsk.core
@@ -8,6 +24,7 @@ import apper
 from apper import AppObjects
 # import ezdxf
 from . import EZDXFCommands
+
 
 # Extract file names of all dxf files in a directory
 def get_dxf_files(file_names):
@@ -107,7 +124,6 @@ def transform_from_vector(occurrence, vector):
 
 
 def create_extrude(profile: adsk.fusion.Profile, component: adsk.fusion.Component, distance, operation, success):
-
     extrudes = component.features.extrudeFeatures
     try:
         ext_input = extrudes.createInput(profile, operation)
@@ -121,7 +137,6 @@ def create_extrude(profile: adsk.fusion.Profile, component: adsk.fusion.Componen
 
 
 def extrude_largest_profile(sketch: adsk.fusion.Sketch, component: adsk.fusion.Component, distance: float):
-
     if sketch.profiles.count == 0:
         return
 
@@ -161,6 +176,7 @@ def extrude_profile_with_most_loops(sketch: adsk.fusion.Sketch, component: adsk.
         face = create_extrude(the_profile, component, distance, operation, success)
 
         return face
+
 
 # def clean_dxf(dxf_file, flatten, explode):
 #     ao = apper.AppObjects()
@@ -439,6 +455,3 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             drop_down_fonts.listItems.add(font_item, False)
 
         drop_down_fonts.listItems.item(0).isSelected = True
-
-
-
