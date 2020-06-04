@@ -93,6 +93,23 @@ class AppObjects(object):
             return None
 
     @property
+    def f_units_manager(self) -> Optional[adsk.fusion.FusionUnitsManager]:
+        """adsk.core.UnitsManager from the active document
+
+        Returns: adsk.fusion.FusionUnitsManager from the active document
+
+        """
+        if self.product.productType == 'DesignProductType':
+            units_manager_ = self._design.fusionUnitsManager
+        else:
+            units_manager_ = None
+
+        if units_manager_ is not None:
+            return units_manager_
+        else:
+            return None
+
+    @property
     def export_manager(self) -> Optional[adsk.fusion.ExportManager]:
         """adsk.fusion.ExportManager from the active document
 
@@ -161,7 +178,8 @@ def end_group(start_index: int):
 
     end_index = ao.time_line.markerPosition - 1
 
-    ao.time_line.timelineGroups.add(start_index, end_index)
+    if end_index - start_index > 0:
+        ao.time_line.timelineGroups.add(start_index, end_index)
 
 
 def import_dxf(

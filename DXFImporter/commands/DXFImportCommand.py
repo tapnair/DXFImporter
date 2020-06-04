@@ -15,6 +15,7 @@
 #  """
 
 import os
+from math import ceil, floor
 
 import adsk.core
 import adsk.fusion
@@ -303,6 +304,11 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             sketch_transform = None
             extrude_sketch_transform = None
             for sketch in sketches:
+
+                if input_values['close_sketches']:
+                    tolerance = input_values['tolerance_input']
+                    close_sketch_gaps(sketch, tolerance)
+
                 if input_values['reset_option_input']:
                     sketch_transform = move_sketch_to_origin(sketch)
 
@@ -334,7 +340,9 @@ class DXFImportCommand(apper.Fusion360CommandBase):
                 font_selection = input_values['font_selection']
                 EZDXFCommands.import_dxf_text(dxf_file['full_path'], text_sketch, font_selection, face)
 
-                if input_values['reset_option_input']:
+                if text_sketch.sketchTexts.count == 0:
+                    text_sketch.deleteMe()
+                elif input_values['reset_option_input']:
                     if extrude_sketch_transform is not None:
                         move_sketch_by_transform(text_sketch, extrude_sketch_transform)
                     elif sketch_transform is not None:
@@ -455,3 +463,103 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             drop_down_fonts.listItems.add(font_item, False)
 
         drop_down_fonts.listItems.item(0).isSelected = True
+
+        command_inputs.addBoolValueInput('close_sketches', 'Close Sketches? ', True, "", False)
+
+        default_units = ao.units_manager.defaultLengthUnits
+        tolerance_default = adsk.core.ValueInput.createByString(
+            '.0001' + default_units
+        )
+        command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, tolerance_default)
+
+
+def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance):
+    ao = AppObjects()
+
+    # factor = int(floor(1/tolerance))
+    factor = int(floor(1/.01))
+    bounding_box = sketch.boundingBox
+    min_x = bounding_box.minPoint.x
+    min_y = bounding_box.minPoint.y
+    max_x = bounding_box.maxPoint.x
+    max_y = bounding_box.maxPoint.y
+    x_range = int(floor(factor*(max_x - min_x)))
+    y_range = int(floor(factor*(max_y - min_y)))
+    trans_x = round(0 - min_x, 6)
+    trans_y = round(0 - min_y, 6)
+
+    # str_comp = str(x_range) + ', ' + str(y_range)
+    # ao.ui.messageBox(str_comp)
+    #
+    # str_comp = str(trans_x) + ', ' + str(trans_y)
+    # ao.ui.messageBox(str_comp)
+
+    grid = [[0 for i in range(x_range+2)] for j in range(y_range+2)]
+    str_list = []
+
+    sketch_point: adsk.fusion.SketchPoint
+    for sketch_point in sketch.sketchPoints:
+        if bounding_box.contains(sketch_point.worldGeometry):
+            x_pos = int(floor(factor * (trans_x + sketch_point.worldGeometry.x)))
+            y_pos = int(floor(factor * (trans_y + sketch_point.worldGeometry.y)))
+            # x_pos = int(factor * round((trans_x + sketch_point.geometry.x), n_places))
+            # y_pos = int(factor * round((trans_y + sketch_point.geometry.y), n_places))
+
+            # str_comp = str(x_pos) + ', ' + str(y_pos)
+            # str_geo = str(sketch_point.worldGeometry.x) + ', ' + str(sketch_point.worldGeometry.y)
+            # ao.ui.messageBox(str_comp + ' : ' + str_geo)
+
+            point_check = grid[y_pos][x_pos]
+            add_point = False
+
+            if isinstance(point_check, adsk.fusion.SketchPoint):
+                if sketch_point.worldGeometry.distanceTo(point_check.worldGeometry) <= tolerance:
+                    # sketch_point.merge(point_check)
+                    sketch.geometricConstraints.addCoincident(sketch_point, point_check)
+                else:
+                    add_point =True
+            else:
+                add_point = True
+
+            if add_point:
+                grid[y_pos][x_pos] = sketch_point
+                grid[y_pos+1][x_pos] = sketch_point
+                grid[y_pos-1][x_pos] = sketch_point
+                grid[y_pos][x_pos+1] = sketch_point
+                grid[y_pos+1][x_pos+1] = sketch_point
+                grid[y_pos-1][x_pos+1] = sketch_point
+                grid[y_pos][x_pos-1] = sketch_point
+                grid[y_pos+1][x_pos-1] = sketch_point
+                grid[y_pos-1][x_pos-1] = sketch_point
+
+            str_list.append(str(x_pos) + ', ' + str(y_pos))
+
+        # ao.ui.messageBox(str(str_list))
+
+
+class CloseGapsCommand(apper.Fusion360CommandBase):
+
+    def __init__(self, name: str, options: dict):
+        super().__init__(name, options)
+
+    # Executed on user pressing OK button
+    def on_execute(self, command, command_inputs: adsk.core.CommandInputs, args, input_values):
+        sketch = input_values['sketch_selection'][0]
+        tolerance = input_values['tolerance_input']
+        close_sketch_gaps(sketch, tolerance)
+
+    def on_create(self, command, command_inputs: adsk.core.CommandInputs):
+        ao = AppObjects()
+
+        sketch_selection = command_inputs.addSelectionInput('sketch_selection', 'Sketch: ', 'Pick a sketch to close gaps')
+        sketch_selection.addSelectionFilter('Sketches')
+        sketch_selection.setSelectionLimits(1, 1)
+
+        default_units = ao.units_manager.defaultLengthUnits
+        tolerance_default = adsk.core.ValueInput.createByString(
+            '.0001' + default_units
+        )
+        command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, tolerance_default)
+
+
+
