@@ -17,6 +17,8 @@
 
 import os
 import sys
+from importlib import reload
+
 import adsk.core
 import traceback
 
@@ -25,6 +27,7 @@ def remove_from_path(name):
     if name in sys.path:
         sys.path.remove(name)
         remove_from_path(name)
+
 
 app_path = os.path.dirname(__file__)
 

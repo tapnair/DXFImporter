@@ -33,7 +33,7 @@ def get_dxf_files(file_names):
 
     for filename in file_names:
 
-        if filename.endswith(".dxf"):
+        if filename.endswith(".dxf") or filename.endswith(".DXF"):
             base_name = os.path.basename(filename)
             dxf_file = {
                 'full_path': filename,
