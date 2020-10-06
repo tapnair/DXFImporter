@@ -1,30 +1,34 @@
-#  """
-#  :copyright: (c) 2020 by Patrick Rainsberry
-#  DXFImportCommand.py
-#  =========================================================
-#  A Component of DXFImporter, a Fusion 360 add-in
-#
-#  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-#
-#  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-#
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-#
-#  """
+"""
+DXFImporter, a Fusion 360 add-in
+================================
+DXF Importer is a Fusion 360 add-in for the bulk import of DXF Files.
 
-import os
-from math import ceil, floor
+:copyright: (c) 2020 by Patrick Rainsberry.
+:license: Apache 2.0, see LICENSE for more details.
 
+DXFImporter leverages the ezdxf library.
+Copyright (C) 2011-2020, Manfred Moitzi
+License: MIT License
+
+
+Notice:
+-------
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+"""
 import adsk.core
 import adsk.fusion
-import traceback
 
-import apper
-from apper import AppObjects
-# import ezdxf
+import os
+from math import floor
+
 from . import EZDXFCommands
+from ..apper import apper
 
 
 # Extract file names of all dxf files in a directory
@@ -253,7 +257,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
         start_index = apper.start_group()
 
         # Gets necessary application objects
-        ao = AppObjects()
+        ao = apper.AppObjects()
         y_magnitude_attribute = ao.design.attributes.itemByName("DXFer", "y_magnitude")
         x_magnitude_attribute = ao.design.attributes.itemByName("DXFer", "x_magnitude")
         row_count_attribute = ao.design.attributes.itemByName("DXFer", "row_count")
@@ -398,7 +402,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
         self.material_list = get_materials()
 
         # Gets necessary application objects
-        ao = AppObjects()
+        ao = apper.AppObjects()
 
         ao.ui.messageBox('Select the DXF Files you would like to place in the design')
 
@@ -480,7 +484,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
 
 
 def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance):
-    ao = AppObjects()
+    ao = apper.AppObjects()
 
     # factor = int(floor(1/tolerance))
     factor = int(floor(1 / .01))
@@ -555,7 +559,7 @@ class CloseGapsCommand(apper.Fusion360CommandBase):
         close_sketch_gaps(sketch, tolerance)
 
     def on_create(self, command, command_inputs: adsk.core.CommandInputs):
-        ao = AppObjects()
+        ao = apper.AppObjects()
 
         sketch_selection = command_inputs.addSelectionInput('sketch_selection', 'Sketch: ',
                                                             'Pick a sketch to close gaps')
