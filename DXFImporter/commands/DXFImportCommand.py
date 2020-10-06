@@ -43,7 +43,7 @@ def get_dxf_files(file_names):
             dxf_files.append(dxf_file)
         else:
             continue
-        
+
     return dxf_files
 
 
@@ -295,8 +295,12 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             occurrence = apper.create_component(ao.root_comp, dxf_file['name'])
 
             # Import all layers of DXF to XY plane
-            sketches = apper.import_dxf(dxf_file['full_path'], occurrence.component,
-                                        occurrence.component.xYConstructionPlane)
+            sketches = apper.import_dxf(
+                dxf_file['full_path'],
+                occurrence.component,
+                occurrence.component.xYConstructionPlane,
+                input_values['single_sketch']
+            )
 
             x_delta = 0
             y_delta = 0
@@ -427,6 +431,8 @@ class DXFImportCommand(apper.Fusion360CommandBase):
 
         command_inputs.addBoolValueInput("reset_option_input", "Reset Sketch Origins?", True, "", False)
 
+        command_inputs.addBoolValueInput('single_sketch', 'Combine to single sketch? ', True, "", False)
+
         command_inputs.addBoolValueInput("extrude_option_input", "Extrude Profiles?", True, "", False)
 
         # Thickness of profiles
@@ -452,7 +458,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             drop_down_input.listItems.add("No materials in current design", True)
 
         # Handle Text
-        font_file = os.path.join(os.path.dirname(__file__), 'fonts.txt')
+        font_file = os.path.join(os.path.dirname(__file__), 'resources', 'fonts.txt')
         self.font_list = open(font_file).read().splitlines()
 
         command_inputs.addBoolValueInput("import_text", "Import Text?", True, "", False)
@@ -477,14 +483,14 @@ def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance):
     ao = AppObjects()
 
     # factor = int(floor(1/tolerance))
-    factor = int(floor(1/.01))
+    factor = int(floor(1 / .01))
     bounding_box = sketch.boundingBox
     min_x = bounding_box.minPoint.x
     min_y = bounding_box.minPoint.y
     max_x = bounding_box.maxPoint.x
     max_y = bounding_box.maxPoint.y
-    x_range = int(floor(factor*(max_x - min_x)))
-    y_range = int(floor(factor*(max_y - min_y)))
+    x_range = int(floor(factor * (max_x - min_x)))
+    y_range = int(floor(factor * (max_y - min_y)))
     trans_x = round(0 - min_x, 6)
     trans_y = round(0 - min_y, 6)
 
@@ -494,7 +500,7 @@ def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance):
     # str_comp = str(trans_x) + ', ' + str(trans_y)
     # ao.ui.messageBox(str_comp)
 
-    grid = [[0 for i in range(x_range+2)] for j in range(y_range+2)]
+    grid = [[0 for i in range(x_range + 2)] for j in range(y_range + 2)]
     str_list = []
 
     sketch_point: adsk.fusion.SketchPoint
@@ -517,20 +523,20 @@ def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance):
                     # sketch_point.merge(point_check)
                     sketch.geometricConstraints.addCoincident(sketch_point, point_check)
                 else:
-                    add_point =True
+                    add_point = True
             else:
                 add_point = True
 
             if add_point:
                 grid[y_pos][x_pos] = sketch_point
-                grid[y_pos+1][x_pos] = sketch_point
-                grid[y_pos-1][x_pos] = sketch_point
-                grid[y_pos][x_pos+1] = sketch_point
-                grid[y_pos+1][x_pos+1] = sketch_point
-                grid[y_pos-1][x_pos+1] = sketch_point
-                grid[y_pos][x_pos-1] = sketch_point
-                grid[y_pos+1][x_pos-1] = sketch_point
-                grid[y_pos-1][x_pos-1] = sketch_point
+                grid[y_pos + 1][x_pos] = sketch_point
+                grid[y_pos - 1][x_pos] = sketch_point
+                grid[y_pos][x_pos + 1] = sketch_point
+                grid[y_pos + 1][x_pos + 1] = sketch_point
+                grid[y_pos - 1][x_pos + 1] = sketch_point
+                grid[y_pos][x_pos - 1] = sketch_point
+                grid[y_pos + 1][x_pos - 1] = sketch_point
+                grid[y_pos - 1][x_pos - 1] = sketch_point
 
             str_list.append(str(x_pos) + ', ' + str(y_pos))
 
@@ -551,7 +557,8 @@ class CloseGapsCommand(apper.Fusion360CommandBase):
     def on_create(self, command, command_inputs: adsk.core.CommandInputs):
         ao = AppObjects()
 
-        sketch_selection = command_inputs.addSelectionInput('sketch_selection', 'Sketch: ', 'Pick a sketch to close gaps')
+        sketch_selection = command_inputs.addSelectionInput('sketch_selection', 'Sketch: ',
+                                                            'Pick a sketch to close gaps')
         sketch_selection.addSelectionFilter('Sketches')
         sketch_selection.setSelectionLimits(1, 1)
 
@@ -560,6 +567,3 @@ class CloseGapsCommand(apper.Fusion360CommandBase):
             '.0001' + default_units
         )
         command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, tolerance_default)
-
-
-

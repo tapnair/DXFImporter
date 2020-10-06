@@ -14,42 +14,23 @@
 #
 #
 #  """
-
-import os
 import sys
-from importlib import reload
 
 import adsk.core
 import traceback
 
+from.startup import setup_app, cleanup_app, get_app_path
+setup_app(__file__)
 
-def remove_from_path(name):
-    if name in sys.path:
-        sys.path.remove(name)
-        remove_from_path(name)
-
-
-app_path = os.path.dirname(__file__)
-
-remove_from_path(app_path)
-remove_from_path(os.path.join(app_path, 'apper'))
-remove_from_path(os.path.join(app_path, 'lib'))
-
-if sys.modules.get('apper', False):
-    del sys.modules['apper']
-
-sys.path.insert(0, app_path)
-sys.path.insert(0, os.path.join(app_path, 'apper'))
-sys.path.insert(0, os.path.join(app_path, 'lib'))
 
 try:
     import config
     import apper
-
-    # Basic Fusion 360 Command Base samples
     from .commands.DXFImportCommand import DXFImportCommand, CloseGapsCommand
+    # TODO rethink when path is cleaned up
 
     my_addin = apper.FusionApp(config.app_name, config.company_name, False)
+    my_addin.root_path = get_app_path(__file__)
 
     # General command showing inputs and user interaction
     my_addin.add_command(
@@ -103,6 +84,4 @@ def run(context):
 
 def stop(context):
     my_addin.stop_app()
-    sys.path.pop(0)
-    sys.path.pop(0)
-    sys.path.pop(0)
+    cleanup_app(__file__)

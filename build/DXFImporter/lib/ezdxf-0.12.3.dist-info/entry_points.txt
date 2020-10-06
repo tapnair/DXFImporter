@@ -1,3 +1,0 @@
-[console_scripts]
-dxfpp = ezdxf.pp.__main__:main
-
