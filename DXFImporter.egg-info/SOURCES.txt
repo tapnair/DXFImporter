@@ -4,6 +4,7 @@ setup.py
 DXFImporter/DXFImporter.manifest
 DXFImporter/DXFImporter.py
 DXFImporter/config.py
+DXFImporter/preferences.py
 DXFImporter.egg-info/PKG-INFO
 DXFImporter.egg-info/SOURCES.txt
 DXFImporter.egg-info/dependency_links.txt

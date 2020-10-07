@@ -21,14 +21,17 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
+from importlib import reload
+
 import adsk.core
 import adsk.fusion
 
 import os
 from math import floor
 
-from . import EZDXFCommands
 from ..apper import apper
+from .. import preferences
+from . import EZDXFCommands
 
 
 def validate_workspace(command: adsk.core.Command):
@@ -38,6 +41,7 @@ def validate_workspace(command: adsk.core.Command):
         solid_workspace = ao.ui.workspaces.itemById('FusionSolidEnvironment')
         solid_workspace.activate()
         ao.ui.commandDefinitions.itemById(command.parentCommandDefinition.id).execute()
+
 
 # Extract file names of all dxf files in a directory
 def get_dxf_files(file_names):
@@ -431,62 +435,79 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             command.isAutoExecute = True
             return
 
-        # Gets default units
+        # Gets default values from preferences
+        reload(preferences)
         default_units = ao.units_manager.defaultLengthUnits
-        spacing_default = adsk.core.ValueInput.createByReal(.5)
-        distance_default = adsk.core.ValueInput.createByReal(.5)
+        default_font = str(preferences.DEFAULT_FONT)
+        default_spacing = adsk.core.ValueInput.createByString(preferences.DEFAULT_PART_SPACING)
+        default_thickness = adsk.core.ValueInput.createByString(preferences.DEFAULT_THICKNESS)
+        default_gap_tol = adsk.core.ValueInput.createByString(preferences.DEFAULT_GAP_TOL)
+        default_parts_per_row = int(preferences.DEFAULT_PARTS_PER_ROW)
+        default_material = str(preferences.DEFAULT_MATERIAL)
 
-        # Spacing between dxfs
-        command_inputs.addValueInput('spacing', 'Spacing between parts: ', default_units, spacing_default)
+        # Spacing between dxf's
+        command_inputs.addValueInput('spacing', 'Spacing between parts: ', default_units, default_spacing)
 
         # Number of components per rows
-        command_inputs.addIntegerSpinnerCommandInput('rows', 'Number per row: ', 1, 999, 1, 8)
+        command_inputs.addIntegerSpinnerCommandInput('rows', 'Number per row: ', 1, 999, 1, default_parts_per_row)
 
-        command_inputs.addBoolValueInput("reset_option_input", "Reset Sketch Origins?", True, "", False)
+        # Resets DXF origin to minimum of the profiles bounding box
+        command_inputs.addBoolValueInput(
+            "reset_option_input", "Reset Sketch Origins?", True, "", preferences.RESET_ORIGINS
+        )
 
-        command_inputs.addBoolValueInput('single_sketch', 'Combine to single sketch? ', True, "", False)
+        # Combines all layers of a DXF into a single sketch
+        command_inputs.addBoolValueInput(
+            'single_sketch', 'Combine to single sketch? ', True, "", preferences.SINGLE_SKETCH
+        )
 
-        command_inputs.addBoolValueInput("extrude_option_input", "Extrude Profiles?", True, "", False)
-
-        # Thickness of profiles
-        command_inputs.addValueInput('distance', 'Thickness: ', default_units, distance_default)
+        # Extrude profiles
+        command_inputs.addBoolValueInput(
+            "extrude_option_input", "Extrude Profiles?", True, "", preferences.EXTRUDE_PROFILES
+        )
+        command_inputs.addValueInput('distance', 'Thickness: ', default_units, default_thickness)
 
         # # Explode Blocks
         # command_inputs.addBoolValueInput("explode_input", "Explode blocks?", True, "", False)
 
         # Add Material
-        command_inputs.addBoolValueInput("apply_material_input", "Apply Material?", True, "", False)
+        material_check_box = command_inputs.addBoolValueInput(
+            "apply_material_input", "Apply Material?", True, "", preferences.APPLY_MATERIAL
+        )
         drop_down_input = command_inputs.addDropDownCommandInput(
             "material_selection", "Material Name", adsk.core.DropDownStyles.TextListDropDownStyle
         )
         if len(self.material_list) > 0:
-            for material_object in self.material_list:
+            default_material_index = 0
+            for i, material_object in enumerate(self.material_list):
                 drop_down_input.listItems.add(material_object['name'], False)
+                if material_object['name'] == default_material:
+                    default_material_index = i
 
-            drop_down_input.listItems.item(0).isSelected = True
+            drop_down_input.listItems.item(default_material_index).isSelected = True
         else:
             drop_down_input.listItems.add("No materials in current design", True)
+            material_check_box.value = False
+            material_check_box.isEnabled = False
 
         # Handle Text
         font_file = os.path.join(os.path.dirname(__file__), 'resources', 'fonts.txt')
         self.font_list = open(font_file).read().splitlines()
 
-        command_inputs.addBoolValueInput("import_text", "Import Text?", True, "", False)
+        command_inputs.addBoolValueInput("import_text", "Import Text?", True, "", preferences.IMPORT_TEXT)
         drop_down_fonts = command_inputs.addDropDownCommandInput(
             "font_selection", "Font: ", adsk.core.DropDownStyles.TextListDropDownStyle
         )
-        for font_item in self.font_list:
+        preselect = 0
+        for i, font_item in enumerate(self.font_list):
             drop_down_fonts.listItems.add(font_item, False)
+            if default_font in font_item:
+                preselect = i
+        drop_down_fonts.listItems.item(preselect).isSelected = True
 
-        drop_down_fonts.listItems.item(0).isSelected = True
-
-        command_inputs.addBoolValueInput('close_sketches', 'Close Sketches? ', True, "", False)
-
-        default_units = ao.units_manager.defaultLengthUnits
-        tolerance_default = adsk.core.ValueInput.createByString(
-            '.0001' + default_units
-        )
-        command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, tolerance_default)
+        # Close Sketches
+        command_inputs.addBoolValueInput('close_sketches', 'Close Sketches? ', True, "", preferences.CLOSE_SKETCH_GAPS)
+        command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, default_gap_tol)
 
 
 def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance):
@@ -565,16 +586,17 @@ class CloseGapsCommand(apper.Fusion360CommandBase):
         close_sketch_gaps(sketch, tolerance)
 
     def on_create(self, command, command_inputs):
-        validate_workspace(command)
         ao = apper.AppObjects()
+
+        reload(preferences)
+        default_units = ao.units_manager.defaultLengthUnits
+        default_gap_tol = adsk.core.ValueInput.createByString(preferences.DEFAULT_GAP_TOL)
+
+        validate_workspace(command)
 
         sketch_selection = command_inputs.addSelectionInput('sketch_selection', 'Sketch: ',
                                                             'Pick a sketch to close gaps')
         sketch_selection.addSelectionFilter('Sketches')
         sketch_selection.setSelectionLimits(1, 1)
 
-        default_units = ao.units_manager.defaultLengthUnits
-        tolerance_default = adsk.core.ValueInput.createByString(
-            '.0001' + default_units
-        )
-        command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, tolerance_default)
+        command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, default_gap_tol)
