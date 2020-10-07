@@ -19,7 +19,7 @@ If you have previously downloaded this or otherwise, make sure the latest versio
 
 ### Inside Fusion 360  
 
-1. Launch Fusion 360.
+1. Launch Fusion 360.   
 2. On the main toolbar click the **Scripts and Addins** button in the **Addins** Pane
 
 	![](/resources/scripts-addins_button.png)
@@ -35,7 +35,7 @@ If you have previously downloaded this or otherwise, make sure the latest versio
      
 5. Click run.  
 6. Dismiss the Addins dialog.  
-7.  Click the DXFImporter Tab and you should see **DXF Import** Panel and command.
+7. Click the **Tools** Tool Bar Tab and you should see **DXF Import** Panel and commands.
 
 	![](/resources/button.png)
 
