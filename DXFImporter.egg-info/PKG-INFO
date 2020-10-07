@@ -16,17 +16,14 @@ Description: # DXF Importer
         ----
         
         ## How to install<a name="How-to-install"></a>
-        1. [Find the latest distribution](https://github.com/tapnair/DXFImporter/tree/master/dist/)
+        1. [Download the latest distribution](https://github.com/tapnair/DXFImporter/raw/master/dist/__LATEST__/DXFImporter.zip)
         
-        ![](/resources/dist.png)
-        
-        2. Navigate to the file in github and select download. _(Note right-click "save target as" / "save link as" won't work)
-        
-        ![](/resources/download.png)
-        
-        3. Unzip the archive to a permanent location on your computer
+        2. Unzip the archive to a permanent location on your computer
         
         ![](/resources/unzipped.png)
+        
+        3. It is important that the directory be named *DXFImporter*.  
+        If you have previously downloaded this or otherwise, make sure the latest version has exactly that directory name.
         
         ### Inside Fusion 360  
         
@@ -39,7 +36,7 @@ Description: # DXF Importer
         
             ![](/resources/scripts-addins.png)
             
-        4. Browse to the 'DXFImporter' sub directory in the unzipped directory
+        4. Browse to the 'DXFImporter' directory
         *Note: this may be the top level folder depending on the zip utility you use or if it is mac vs. windows.*
             
              ![](/resources/unzipped.png)
