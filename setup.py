@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setup(
     name='DXFImporter',
-    version='1.0.4',
+    version='1.0.5',
     description='A utility for Fusion 360 to import multiple DXF files.',
     long_description=long_description,
-    packages=['DXFImporter', 'DXFImporter.apper.apper', 'DXFImporter.commands'],
+    packages=['DXFImporter', 'DXFImporter.apper.apper', 'DXFImporter.commands', 'DXFImporter.lib.ezdxf'],
     package_data={
         "": ["resources/*", "resources/**/*", "*.manifest", "LICENSE"],
     },
