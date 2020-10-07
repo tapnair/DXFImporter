@@ -14,6 +14,9 @@ A utility for Fusion 360 to import multiple DXF files.
 
 ![](/resources/unzipped.png)
 
+3. It is important that the directory be named *DXFImporter*.  
+If you have previously downloaded this or otherwise, make sure the latest version has exactly that directory name.
+
 ### Inside Fusion 360  
 
 1. Launch Fusion 360.
