@@ -36,18 +36,19 @@ try:
 
     # General command showing inputs and user interaction
     my_addin.add_command(
-        'DXF Import',
+        'DXF Bulk Import',
         DXFImportCommand,
         {
             'cmd_description': 'Import multiple DXF Files',
             'cmd_id': 'dxf_import_cmd',
             'workspace': 'FusionSolidEnvironment',
             'toolbar_panel_id': 'DXF Import',
+            'toolbar_tab_name': 'TOOLS',
+            'toolbar_tab_id': 'ToolsTab',
             'cmd_resources': 'command_icons',
             'command_visible': True,
             'command_promoted': True,
-            'toolbar_tab_name': 'TOOLS',
-            'toolbar_tab_id': 'ToolsTab'
+
         }
     )
 
@@ -56,15 +57,16 @@ try:
         'Close Sketch Gaps',
         CloseGapsCommand,
         {
-            'cmd_description': 'Close any gaps within tolerance in a Sketch',
+            'cmd_description': 'Close any gaps within tolerance in a Sketch (Like from an imported DXF File)',
             'cmd_id': 'dxf_gap_cmd',
             'workspace': 'FusionSolidEnvironment',
             'toolbar_panel_id': 'DXF Import',
+            'toolbar_tab_name': 'TOOLS',
+            'toolbar_tab_id': 'ToolsTab',
             'cmd_resources': 'command_icons',
             'command_visible': True,
             'command_promoted': False,
-            'toolbar_tab_name': 'TOOLS',
-            'toolbar_tab_id': 'ToolsTab'
+
         }
     )
 

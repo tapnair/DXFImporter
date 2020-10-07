@@ -31,6 +31,14 @@ from . import EZDXFCommands
 from ..apper import apper
 
 
+def validate_workspace(command: adsk.core.Command):
+    command.isExecutedWhenPreEmpted = False
+    ao = apper.AppObjects()
+    if ao.product.productType != 'DesignProductType':
+        solid_workspace = ao.ui.workspaces.itemById('FusionSolidEnvironment')
+        solid_workspace.activate()
+        ao.ui.commandDefinitions.itemById(command.parentCommandDefinition.id).execute()
+
 # Extract file names of all dxf files in a directory
 def get_dxf_files(file_names):
     dxf_files = []
@@ -398,6 +406,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
 
     # Define the user interface for the command
     def on_create(self, command, command_inputs: adsk.core.CommandInputs):
+        validate_workspace(command)
         self.file_names = []
         self.material_list = get_materials()
 
@@ -444,9 +453,6 @@ class DXFImportCommand(apper.Fusion360CommandBase):
 
         # # Explode Blocks
         # command_inputs.addBoolValueInput("explode_input", "Explode blocks?", True, "", False)
-        #
-        # # Flatten to single layer
-        # command_inputs.addBoolValueInput("flatten_input", "Flatten to single sketch?", True, "", False)
 
         # Add Material
         command_inputs.addBoolValueInput("apply_material_input", "Apply Material?", True, "", False)
@@ -558,7 +564,8 @@ class CloseGapsCommand(apper.Fusion360CommandBase):
         tolerance = input_values['tolerance_input']
         close_sketch_gaps(sketch, tolerance)
 
-    def on_create(self, command, command_inputs: adsk.core.CommandInputs):
+    def on_create(self, command, command_inputs):
+        validate_workspace(command)
         ao = apper.AppObjects()
 
         sketch_selection = command_inputs.addSelectionInput('sketch_selection', 'Sketch: ',
