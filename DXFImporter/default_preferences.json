@@ -1,0 +1,18 @@
+{
+  "DEFAULT": {
+    "SHOW_POPUP": true,
+    "DEFAULT_PART_SPACING": ".5 in",
+    "DEFAULT_PARTS_PER_ROW": 8,
+    "RESET_ORIGINS": false,
+    "SINGLE_SKETCH": false,
+    "EXTRUDE_PROFILES": true,
+    "DEFAULT_THICKNESS": ".25 in",
+    "APPLY_MATERIAL": true,
+    "DEFAULT_MATERIAL": "Steel",
+    "IMPORT_TEXT": false,
+    "DEFAULT_FONT": "Monotxt8",
+    "CLOSE_SKETCH_GAPS": false,
+    "DEFAULT_GAP_TOL": ".0001 in"
+  }
+}
+

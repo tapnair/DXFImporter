@@ -17,7 +17,7 @@ DEFAULT_PARTS_PER_ROW = 8
 # This must be a boolean, i.e. True or False
 RESET_ORIGINS = False
 
-# Default value for the option to collapse aall DXF layers to a single sketch
+# Default value for the option to collapse all DXF layers to a single sketch
 # This must be a boolean, i.e. True or False
 SINGLE_SKETCH = False
 

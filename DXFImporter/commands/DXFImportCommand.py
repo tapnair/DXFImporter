@@ -28,10 +28,28 @@ import adsk.fusion
 
 import os
 from math import floor
+import json
 
 from ..apper import apper
-from .. import preferences
+from .. import config
 from . import EZDXFCommands
+
+
+def setup_preferences(fusion_app: apper.FusionApp):
+    # ao = apper.AppObjects()
+    # ao.ui.messageBox()
+    file_name = os.path.join(config.app_path, "default_preferences.json")
+    if os.path.exists(file_name):
+        with open(file_name) as f:
+            try:
+                default_preferences = json.load(f)
+            except:
+                default_preferences = {}
+    else:
+        default_preferences = {}
+
+    if bool(default_preferences):
+        fusion_app.save_preferences("DEFAULT", default_preferences["DEFAULT"], False)
 
 
 def validate_workspace(command: adsk.core.Command):
@@ -249,9 +267,14 @@ class DXFImportCommand(apper.Fusion360CommandBase):
         self.file_names = []
         self.material_list = []
         self.font_list = []
+        self.fusion_app: apper.FusionApp
 
     # Executed on user pressing OK button
     def on_execute(self, command, command_inputs: adsk.core.CommandInputs, args, input_values):
+
+        if input_values["save_settings"]:
+            save_settings(command_inputs, self.fusion_app)
+
         if len(self.file_names) == 0:
             return
 
@@ -436,14 +459,19 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             return
 
         # Gets default values from preferences
-        reload(preferences)
+        # reload(preferences)
+        preferences = self.fusion_app.get_group_preferences("DEFAULT")
+        if not bool(preferences):
+            setup_preferences(self.fusion_app)
+            preferences = self.fusion_app.get_group_preferences("DEFAULT")
+
         default_units = ao.units_manager.defaultLengthUnits
-        default_font = str(preferences.DEFAULT_FONT)
-        default_spacing = adsk.core.ValueInput.createByString(preferences.DEFAULT_PART_SPACING)
-        default_thickness = adsk.core.ValueInput.createByString(preferences.DEFAULT_THICKNESS)
-        default_gap_tol = adsk.core.ValueInput.createByString(preferences.DEFAULT_GAP_TOL)
-        default_parts_per_row = int(preferences.DEFAULT_PARTS_PER_ROW)
-        default_material = str(preferences.DEFAULT_MATERIAL)
+        default_font = str(preferences["DEFAULT_FONT"])
+        default_spacing = adsk.core.ValueInput.createByString(preferences["DEFAULT_PART_SPACING"])
+        default_thickness = adsk.core.ValueInput.createByString(preferences["DEFAULT_THICKNESS"])
+        default_gap_tol = adsk.core.ValueInput.createByString(preferences["DEFAULT_GAP_TOL"])
+        default_parts_per_row = int(preferences["DEFAULT_PARTS_PER_ROW"])
+        default_material = str(preferences["DEFAULT_MATERIAL"])
 
         # Spacing between dxf's
         command_inputs.addValueInput('spacing', 'Spacing between parts: ', default_units, default_spacing)
@@ -453,17 +481,17 @@ class DXFImportCommand(apper.Fusion360CommandBase):
 
         # Resets DXF origin to minimum of the profiles bounding box
         command_inputs.addBoolValueInput(
-            "reset_option_input", "Reset Sketch Origins?", True, "", preferences.RESET_ORIGINS
+            "reset_option_input", "Reset Sketch Origins?", True, "", preferences["RESET_ORIGINS"]
         )
 
         # Combines all layers of a DXF into a single sketch
         command_inputs.addBoolValueInput(
-            'single_sketch', 'Combine to single sketch? ', True, "", preferences.SINGLE_SKETCH
+            'single_sketch', 'Combine to single sketch? ', True, "", preferences["SINGLE_SKETCH"]
         )
 
         # Extrude profiles
         command_inputs.addBoolValueInput(
-            "extrude_option_input", "Extrude Profiles?", True, "", preferences.EXTRUDE_PROFILES
+            "extrude_option_input", "Extrude Profiles?", True, "", preferences["EXTRUDE_PROFILES"]
         )
         command_inputs.addValueInput('distance', 'Thickness: ', default_units, default_thickness)
 
@@ -472,7 +500,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
 
         # Add Material
         material_check_box = command_inputs.addBoolValueInput(
-            "apply_material_input", "Apply Material?", True, "", preferences.APPLY_MATERIAL
+            "apply_material_input", "Apply Material?", True, "", preferences["APPLY_MATERIAL"]
         )
         drop_down_input = command_inputs.addDropDownCommandInput(
             "material_selection", "Material Name", adsk.core.DropDownStyles.TextListDropDownStyle
@@ -494,7 +522,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
         font_file = os.path.join(os.path.dirname(__file__), 'resources', 'fonts.txt')
         self.font_list = open(font_file).read().splitlines()
 
-        command_inputs.addBoolValueInput("import_text", "Import Text?", True, "", preferences.IMPORT_TEXT)
+        command_inputs.addBoolValueInput("import_text", "Import Text?", True, "", preferences["IMPORT_TEXT"])
         drop_down_fonts = command_inputs.addDropDownCommandInput(
             "font_selection", "Font: ", adsk.core.DropDownStyles.TextListDropDownStyle
         )
@@ -506,8 +534,32 @@ class DXFImportCommand(apper.Fusion360CommandBase):
         drop_down_fonts.listItems.item(preselect).isSelected = True
 
         # Close Sketches
-        command_inputs.addBoolValueInput('close_sketches', 'Close Sketches? ', True, "", preferences.CLOSE_SKETCH_GAPS)
+        command_inputs.addBoolValueInput(
+            'close_sketches', 'Close Sketches? ', True, "", preferences["CLOSE_SKETCH_GAPS"]
+        )
         command_inputs.addValueInput('tolerance_input', 'Gap Tolerance: ', default_units, default_gap_tol)
+
+        # Save settings
+        command_inputs.addBoolValueInput('save_settings', 'Save Settings? ', True, "", False)
+
+
+def save_settings(inputs: adsk.core.CommandInputs, fusion_app: apper.FusionApp):
+    new_prefs = {
+        "SHOW_POPUP": True,
+        "DEFAULT_PART_SPACING": inputs.itemById('spacing').expression,
+        "DEFAULT_PARTS_PER_ROW": inputs.itemById('rows').value,
+        "RESET_ORIGINS": inputs.itemById('reset_option_input').value,
+        "SINGLE_SKETCH": inputs.itemById('single_sketch').value,
+        "EXTRUDE_PROFILES": inputs.itemById('extrude_option_input').value,
+        "DEFAULT_THICKNESS": inputs.itemById('distance').expression,
+        "APPLY_MATERIAL": inputs.itemById('apply_material_input').value,
+        "DEFAULT_MATERIAL": inputs.itemById('material_selection').selectedItem.name,
+        "IMPORT_TEXT": inputs.itemById('import_text').value,
+        "DEFAULT_FONT": inputs.itemById('font_selection').selectedItem.name,
+        "CLOSE_SKETCH_GAPS": inputs.itemById('close_sketches').value,
+        "DEFAULT_GAP_TOL": inputs.itemById('tolerance_input').expression
+    }
+    fusion_app.save_preferences("DEFAULT", new_prefs, False)
 
 
 def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance):
@@ -578,6 +630,9 @@ class CloseGapsCommand(apper.Fusion360CommandBase):
 
     def __init__(self, name: str, options: dict):
         super().__init__(name, options)
+        self.preferences = self.fusion_app.get_all_preferences()
+        if not bool(self.preferences):
+            setup_preferences(self.fusion_app)
 
     # Executed on user pressing OK button
     def on_execute(self, command, command_inputs: adsk.core.CommandInputs, args, input_values):
@@ -588,9 +643,9 @@ class CloseGapsCommand(apper.Fusion360CommandBase):
     def on_create(self, command, command_inputs):
         ao = apper.AppObjects()
 
-        reload(preferences)
+        preferences = self.fusion_app.get_group_preferences("DEFAULT")
         default_units = ao.units_manager.defaultLengthUnits
-        default_gap_tol = adsk.core.ValueInput.createByString(preferences.DEFAULT_GAP_TOL)
+        default_gap_tol = adsk.core.ValueInput.createByString(preferences["DEFAULT_GAP_TOL"])
 
         validate_workspace(command)
 
