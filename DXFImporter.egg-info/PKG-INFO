@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: DXFImporter
-Version: 1.0.5
+Version: 1.0.6
 Summary: A utility for Fusion 360 to import multiple DXF files.
 Home-page: https://github.com/tapnair/DXFImporter
 Author: Patrick Rainsberry
