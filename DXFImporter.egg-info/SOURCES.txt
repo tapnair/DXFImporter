@@ -3,8 +3,10 @@ README.md
 setup.py
 DXFImporter/DXFImporter.manifest
 DXFImporter/DXFImporter.py
+DXFImporter/HelpFile.html
+DXFImporter/HelpFile.pdf
 DXFImporter/config.py
-DXFImporter/preferences.py
+DXFImporter/default_preferences.json
 DXFImporter.egg-info/PKG-INFO
 DXFImporter.egg-info/SOURCES.txt
 DXFImporter.egg-info/dependency_links.txt
@@ -22,6 +24,7 @@ DXFImporter/commands/DXFImportCommand.py
 DXFImporter/commands/EZDXFCommands.py
 DXFImporter/commands/__init__.py
 DXFImporter/commands/resources/fonts.txt
+DXFImporter/commands/resources/tooltips.json
 DXFImporter/commands/resources/command_icons/16x16-dark.png
 DXFImporter/commands/resources/command_icons/16x16-dark@2x.png
 DXFImporter/commands/resources/command_icons/16x16-disabled.png

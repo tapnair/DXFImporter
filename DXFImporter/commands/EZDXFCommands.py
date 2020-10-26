@@ -21,6 +21,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
+import logging
+
 import adsk.core
 import adsk.fusion
 
@@ -103,7 +105,7 @@ def create_sketch_text(sketch: adsk.fusion.Sketch, dxf_text_entity, font_selecti
 
 
 @apper.lib_import(config.app_path)
-def import_dxf_text(file_name, sketch, font_selection, face):
+def import_dxf_text(file_name, sketch, font_selection, logger: logging.Logger):
     import ezdxf
     from ezdxf.entities.text import Text
     doc = ezdxf.readfile(file_name)
@@ -113,11 +115,9 @@ def import_dxf_text(file_name, sketch, font_selection, face):
     if dxf_units is None:
         app = adsk.core.Application.get()
         doc_units = app.activeProduct.unitsManager.defaultLengthUnits
-        app.userInterface.messageBox(
-            f'The file: {file_name} did not specify units.  '
-            f'Default documents units ({doc_units}) are being assumed for text import.  '
-            f'This will likely cause scaling errors with your text and will need to be corrected.'
-        )
+        logger.warning(f'The file: {file_name} did not specify units.')
+        logger.warning(f'Default documents units ({doc_units}) are being assumed for text import.')
+        logger.warning(f'This will likely cause scaling errors with your text and will need to be corrected.')
 
     else:
         doc_units = DxfToFusionUnits.get(dxf_units, None)
@@ -128,17 +128,14 @@ def import_dxf_text(file_name, sketch, font_selection, face):
 
             unsupported_units = AllDxfUnits.get(dxf_units, None)
             if unsupported_units is not None:
-                app.userInterface.messageBox(
-                    f'The file: {file_name} specifies unsupported units: ({unsupported_units}).  '
-                    f'Default documents units ({doc_units}) are being assumed for text import.  '
-                    f'This will likely cause scaling errors with your text and will need to be corrected.'
-                )
+                logger.warning(f'The file: {file_name} specifies unsupported units: ({unsupported_units}).')
+                logger.warning(f'Default documents units ({doc_units}) are being assumed for text import.')
+                logger.warning(f'This could cause scaling errors with your text and will need to be corrected.')
+
             else:
-                app.userInterface.messageBox(
-                    f'The file: {file_name} specifies invalid units.  '
-                    f'Default documents units ({doc_units}) are being assumed for text import.  '
-                    f'This will likely cause scaling errors with your text and will need to be corrected.'
-                )
+                logger.warning(f'The file: {file_name} specifies invalid units.')
+                logger.warning(f'Default documents units ({doc_units}) are being assumed for text import.')
+                logger.warning(f'This will likely cause scaling errors with your text and will need to be corrected.')
 
     # entity query for all TEXT entities in model space
     dxf_text_entity: Text
