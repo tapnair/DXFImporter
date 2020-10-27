@@ -2,7 +2,9 @@
 A utility for Fusion 360 to import multiple DXF files.
 
 [How to use](#How-to-use)
+
 [How to install](#How-to-install)
+
 [For Developers](#For-Developers)
 
 ----
