@@ -95,7 +95,10 @@ def create_sketch_text(sketch: adsk.fusion.Sketch, dxf_text_entity, font_selecti
     # sketch_text_input.textStyle = adsk.fusion.TextStyles.TextStyleBold
 
     # Set sketch text rotation
-    sketch_text_input.angle = dxf_text_entity.dxf.rotation
+    if dxf_text_entity.dxf.rotation:
+        sketch_text_input.angle = ao.units_manager.convert(dxf_text_entity.dxf.rotation, 'deg', 'rad')
+    else:
+        sketch_text_input.angle = 0.0
 
     # Set sketch text rotation
     sketch_text_input.fontName = font_selection
