@@ -405,12 +405,15 @@ def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance, logger: logging.Log
     ao = apper.AppObjects()
 
     # factor = int(floor(1/tolerance))
-    factor = int(floor(1 / .01))
+
     bounding_box = sketch.boundingBox
     min_x = bounding_box.minPoint.x
     min_y = bounding_box.minPoint.y
     max_x = bounding_box.maxPoint.x
     max_y = bounding_box.maxPoint.y
+
+    factor = int(floor(2000 / ((max_x - min_x) + (max_y - min_y))))
+
     x_range = int(floor(factor * (max_x - min_x)))
     y_range = int(floor(factor * (max_y - min_y)))
     trans_x = round(0 - min_x, 6)
@@ -423,48 +426,40 @@ def close_sketch_gaps(sketch: adsk.fusion.Sketch, tolerance, logger: logging.Log
     # str_comp = str(trans_x) + ', ' + str(trans_y)
     # ao.ui.messageBox(str_comp)
 
-    grid = [[0 for i in range(x_range + 2)] for j in range(y_range + 2)]
+    grid = [[[] for i in range(x_range + 2)] for j in range(y_range + 2)]
     str_list = []
     constrained_points: int = 0
     sketch_point: adsk.fusion.SketchPoint
     for sketch_point in sketch.sketchPoints:
-        if bounding_box.contains(sketch_point.worldGeometry):
-            x_pos: int = int(floor(factor * (trans_x + sketch_point.worldGeometry.x)))
-            y_pos: int = int(floor(factor * (trans_y + sketch_point.worldGeometry.y)))
-            point_check = grid[y_pos][x_pos]
-            add_point = False
+        if sketch_point.geometry.z == 0:
+            if bounding_box.contains(sketch_point.worldGeometry):
+                x_pos: int = int(floor(factor * (trans_x + sketch_point.worldGeometry.x)))
+                y_pos: int = int(floor(factor * (trans_y + sketch_point.worldGeometry.y)))
+                point_check_list = grid[y_pos][x_pos]
+                point_merged = False
+                for point_check in point_check_list:
+                    if isinstance(point_check, adsk.fusion.SketchPoint):
+                        if sketch_point.worldGeometry.distanceTo(point_check.worldGeometry) <= tolerance:
+                            try:
+                                sketch.geometricConstraints.addCoincident(sketch_point, point_check)
+                                constrained_points += 1
+                                point_merged = True
 
-            if isinstance(point_check, adsk.fusion.SketchPoint):
-                if sketch_point.worldGeometry.distanceTo(point_check.worldGeometry) <= tolerance:
-                    # Doesn't seem to work on imported DXF Files:"
-                    # try:
-                    #     sketch_point.merge(point_check)
-                    #     merged_points += 1
-                    # except:
-                    try:
-                        sketch.geometricConstraints.addCoincident(sketch_point, point_check)
-                        constrained_points += 1
+                            except:
+                                logger.error(f"Constrain Points Error: {traceback.format_exc(2)}")
 
-                    except:
-                        logger.error(f"Constrain Points Error: {traceback.format_exc(2)}")
-                        add_point = True
-                else:
-                    add_point = True
-            else:
-                add_point = True
+                if not point_merged:
+                    grid[y_pos][x_pos].append(sketch_point)
+                    grid[y_pos + 1][x_pos].append(sketch_point)
+                    grid[y_pos - 1][x_pos].append(sketch_point)
+                    grid[y_pos][x_pos + 1].append(sketch_point)
+                    grid[y_pos + 1][x_pos + 1].append(sketch_point)
+                    grid[y_pos - 1][x_pos + 1].append(sketch_point)
+                    grid[y_pos][x_pos - 1].append(sketch_point)
+                    grid[y_pos + 1][x_pos - 1].append(sketch_point)
+                    grid[y_pos - 1][x_pos - 1].append(sketch_point)
 
-            if add_point:
-                grid[y_pos][x_pos] = sketch_point
-                grid[y_pos + 1][x_pos] = sketch_point
-                grid[y_pos - 1][x_pos] = sketch_point
-                grid[y_pos][x_pos + 1] = sketch_point
-                grid[y_pos + 1][x_pos + 1] = sketch_point
-                grid[y_pos - 1][x_pos + 1] = sketch_point
-                grid[y_pos][x_pos - 1] = sketch_point
-                grid[y_pos + 1][x_pos - 1] = sketch_point
-                grid[y_pos - 1][x_pos - 1] = sketch_point
-
-            str_list.append(str(x_pos) + ', ' + str(y_pos))
+                str_list.append(str(x_pos) + ', ' + str(y_pos))
 
         # ao.ui.messageBox(str(str_list))
     # if merged_points > 0:
