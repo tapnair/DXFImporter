@@ -583,7 +583,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
         )
         command_inputs.addValueInput('distance', 'Thickness: ', default_units, default_thickness)
         command_inputs.addBoolValueInput(
-            "keep_sketches_shown", "Keep Sketches Shown", True, "", default_keep_sketches_shown
+            "keep_sketches_shown", "Keep Sketches Shown?", True, "", default_keep_sketches_shown
         )
 
         # Add Material

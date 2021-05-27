@@ -1,0 +1,17 @@
+{
+  "spacing": "You can set the spacing between the imported files by changing the value.",
+  "rows": "You can also adjust the number of files per row by adjusting the  option.",
+  "reset_option_input": "This option will move the entities in each sketch (layer of the dxf file) such that the bottom left corner of their bounding box is at the parts origin.",
+  "single_sketch": "If checked all layers in the DXF will be combined into a single sketch.  If unchecked a sketch will be created for each layer in the dxf file.",
+  "extrude_option_input": "This option with extrude the outer profile of each sketch.",
+  "distance": "The to the value to extrude profiles (If checked).",
+  "keep_sketches_shown": "If checked, and you choose to extrude the profiles, the sketch will remain visible in the scene.",
+  "apply_material_input": "You can choose to automatically assign a material to all of the newly created components.",
+  "material_selection": "The material to apply.  Note the material must exist in the current model.  You can browse the material library and add your chosen material before running the import command.",
+  "import_text": "If selected text from the DXF file will be read and rebuilt as Fusion 360 Text.  The units of the DXF file will be used for scaling if they are present.  If not the current document units will be used to interpret size.",
+  "font_selection": "The Font to use for the imported text.  To edit the available fonts you can edit the `fonts.txt` file located in: `./commands/resources`",
+  "close_sketches": "This option will attempt to close small gaps in the imported file.",
+  "tolerance_input": "2 points within this tolerance will be merged.  NOTE:  This will, of course, have very subtle effects on the exact placement of imported geometry.",
+  "save_settings": "The current settings in the dialog will be saved as defaults for the next time you use the command.",
+  "show_popup": "If this is unchecked AND you save your settings, the popup informing you to select DXF's will not be displayed on future runs."
+}

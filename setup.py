@@ -1,3 +1,8 @@
+# To make distribution
+# run setup tools build_py
+# Zip output directory and overwrite zip in latest and add version
+# Update Help
+
 from setuptools import setup
 
 with open("README.md", "r") as fh:
@@ -5,7 +10,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='DXFImporter',
-    version='1.0.8',
+    version='1.0.9',
     description='A utility for Fusion 360 to import multiple DXF files.',
     long_description=long_description,
     packages=['DXFImporter', 'DXFImporter.apper.apper', 'DXFImporter.commands', 'DXFImporter.lib.ezdxf'],

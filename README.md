@@ -29,7 +29,8 @@ The following options can also be set to perform various customizations and clea
 * *Combine to a single sketch* - If checked all layers in the DXF will be combined into a single sketch.  If unchecked a sketch will be created for each layer in the dxf file.
 * *Extrude Profiles* - This option with extrude the outer profile of each sketch. 
 * *Thickness* - The to the value to extrude profiles (If checked).
-* *Apply Material* - You can choose to automatically assign a material to all of the newly created components.
+* *Keep Sketches Shown* - If checked, and you choose to extrude the profiles, the sketch will remain visible in the scene.
+* *Apply Material* - You can choose to automatically assign a material to all the newly created components.
 * *Material Name* - The material to apply.  Note the material must exist in the current model.  You can browse the material library and add your chosen material before running the import command.
 * *Import Text* - If selected text from the DXF file will be read and rebuilt as Fusion 360 Text.  The units of the DXF file will be used for scaling if they are present.  If not the current document units will be used to interpret size.
 * *Font* - The Font to use for the imported text.  To edit the available fonts you can edit the `fonts.txt` file located in: `./commands/resources`
@@ -39,7 +40,7 @@ The following options can also be set to perform various customizations and clea
 * *Show Popup* - If this is unchecked AND you save your settings, the popup informing you to select DXF's will not be displayed on future runs.
 
 ## How to install<a name="How-to-install"></a>
-1. [Download the latest distribution](https://github.com/tapnair/DXFImporter/raw/master/dist/__LATEST__/DXFImporter.zip)
+1. [Download the latest distribution](https://github.com/tapnair/DXFImporter/raw/master/build/__LATEST__/DXFImporter.zip)
 
 2. Unzip the archive to a permanent location on your computer
 
