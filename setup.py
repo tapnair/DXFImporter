@@ -1,7 +1,7 @@
 # To make distribution
 # run setup tools build_py
 # Zip output directory and overwrite zip in latest and add version
-# Update Help
+# Update Help, make pdf with: https://www.markdowntopdf.com/
 
 from setuptools import setup
 
