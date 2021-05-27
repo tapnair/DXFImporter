@@ -11,7 +11,7 @@ setup(
     packages=['DXFImporter', 'DXFImporter.apper.apper', 'DXFImporter.commands', 'DXFImporter.lib.ezdxf'],
     package_data={
         "": ["resources/*", "resources/**/*", "*.manifest", "LICENSE", "HelpFile.pdf", "HelpFile.html",
-            "default_preferences.json"],
+             "default_preferences.json"],
     },
     url='https://github.com/tapnair/DXFImporter',
     license='MIT',

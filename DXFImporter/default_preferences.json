@@ -12,7 +12,8 @@
     "IMPORT_TEXT": false,
     "DEFAULT_FONT": "Monotxt8",
     "CLOSE_SKETCH_GAPS": false,
-    "DEFAULT_GAP_TOL": ".0001 in"
+    "DEFAULT_GAP_TOL": ".0001 in",
+    "KEEP_SKETCHES_SHOWN": false
   }
 }
 

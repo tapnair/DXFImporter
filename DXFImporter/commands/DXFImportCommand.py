@@ -153,6 +153,7 @@ def create_extrude(profile: adsk.fusion.Profile, component: adsk.fusion.Componen
         extrude_feature: adsk.fusion.ExtrudeFeature = extrudes.add(ext_input)
         face = extrude_feature.endFaces.item(0)
         return face
+
     except:
         return success
 
@@ -318,6 +319,8 @@ def process_dxf_files(dxf_files, input_values, material, logger: logging.Logger)
                 if this_face:
                     face = this_face
                     extrude_sketch_transform = sketch_transform
+                if input_values['keep_sketches_shown']:
+                    sketch.isLightBulbOn = True
 
         if input_values['import_text']:
             # Alternative to create sketch on extrude cap face, having transform issues.
@@ -396,7 +399,8 @@ def save_settings(inputs: adsk.core.CommandInputs, fusion_app: apper.FusionApp):
         "IMPORT_TEXT": inputs.itemById('import_text').value,
         "DEFAULT_FONT": inputs.itemById('font_selection').selectedItem.name,
         "CLOSE_SKETCH_GAPS": inputs.itemById('close_sketches').value,
-        "DEFAULT_GAP_TOL": inputs.itemById('tolerance_input').expression
+        "DEFAULT_GAP_TOL": inputs.itemById('tolerance_input').expression,
+        "KEEP_SKETCHES_SHOWN": inputs.itemById('keep_sketches_shown').value
     }
     fusion_app.save_preferences("DEFAULT", new_prefs, False)
 
@@ -540,6 +544,7 @@ class DXFImportCommand(apper.Fusion360CommandBase):
         default_gap_tol = adsk.core.ValueInput.createByString(preferences["DEFAULT_GAP_TOL"])
         default_parts_per_row = int(preferences["DEFAULT_PARTS_PER_ROW"])
         default_material = str(preferences["DEFAULT_MATERIAL"])
+        default_keep_sketches_shown = preferences.get("KEEP_SKETCHES_SHOWN", False)
 
         if preferences.get("SHOW_POPUP", True):
             ao.ui.messageBox('Select the DXF Files you would like to place in the design')
@@ -577,6 +582,9 @@ class DXFImportCommand(apper.Fusion360CommandBase):
             "extrude_option_input", "Extrude Profiles?", True, "", preferences["EXTRUDE_PROFILES"]
         )
         command_inputs.addValueInput('distance', 'Thickness: ', default_units, default_thickness)
+        command_inputs.addBoolValueInput(
+            "keep_sketches_shown", "Keep Sketches Shown?", True, "", default_keep_sketches_shown
+        )
 
         # Add Material
         material_check_box = command_inputs.addBoolValueInput(
